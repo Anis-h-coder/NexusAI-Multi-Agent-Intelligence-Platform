@@ -1,0 +1,8 @@
+{
+  "name": "Remix NexusAI-Enterprise-Multi-Agent-Intelligence-Platform",
+  "description": "Imported from GitHub: Anis-h-coder/NexusAI-Enterprise-Multi-Agent-Intelligence-Platform",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
