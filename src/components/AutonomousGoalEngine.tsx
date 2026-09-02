@@ -41,6 +41,7 @@ import {
   GoalStage,
   GoalExecutionStateMachineState,
 } from '../types';
+import { executeGoalEngine } from '../server/goalEngineService';
 
 interface AutonomousGoalEngineProps {
   initialGoal?: string;
@@ -330,89 +331,109 @@ export const AutonomousGoalEngine: React.FC<AutonomousGoalEngineProps> = ({ init
     };
 
     try {
-      const response = await fetch('/api/goal-engine/execute', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'text/event-stream, application/json',
-        },
-        body: JSON.stringify({
-          userGoal: goal,
-          stream: true,
-          client: 'autonomous-goal-engine',
-        }),
-      });
+      let isServerSuccess = false;
+      try {
+        const response = await fetch('/api/goal-engine/execute', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'text/event-stream, application/json',
+          },
+          body: JSON.stringify({
+            userGoal: goal,
+            stream: true,
+            client: 'autonomous-goal-engine',
+          }),
+        });
 
-      if (!response.ok) {
-        const message = await response.text().catch(() => '');
-        throw new Error(message || `Execution failed with status ${response.status}`);
+        if (response.ok) {
+          const contentType = response.headers.get('content-type') || '';
+          if (contentType.includes('text/event-stream') && response.body) {
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            while (true) {
+              const { value, done } = await reader.read();
+              if (done) break;
+
+              buffer += decoder.decode(value, { stream: true });
+              const events = buffer.split('\n\n');
+              buffer = events.pop() || '';
+
+              for (const rawEvent of events) {
+                const dataLines = rawEvent
+                  .split('\n')
+                  .filter((line) => line.startsWith('data:'))
+                  .map((line) => line.slice(5).trim());
+
+                if (!dataLines.length) continue;
+                const payload = dataLines.join('\n');
+                if (!payload || payload === '[DONE]') continue;
+
+                try {
+                  applyEvent(JSON.parse(payload));
+                } catch {
+                  setLiveEvent(payload);
+                }
+              }
+            }
+
+            if (buffer.trim()) {
+              const dataLines = buffer
+                .split('\n')
+                .filter((line) => line.startsWith('data:'))
+                .map((line) => line.slice(5).trim());
+
+              const payload = dataLines.join('\n');
+              if (payload && payload !== '[DONE]') {
+                try {
+                  applyEvent(JSON.parse(payload));
+                } catch {
+                  setLiveEvent(payload);
+                }
+              }
+            }
+            isServerSuccess = true;
+          } else if (contentType.includes('application/json')) {
+            const rawText = await response.text();
+            let data: GoalExecutionResult | null = null;
+            try {
+              data = JSON.parse(rawText);
+            } catch {
+              data = null;
+            }
+
+            if (data) {
+              applyEvent({
+                state: data.executionState || 'COMPLETED',
+                nodes: data.nodes,
+                executionResult: data,
+                message: 'Autonomous execution completed.',
+              });
+              isServerSuccess = true;
+            }
+          }
+        }
+      } catch (serverErr) {
+        console.warn('Backend API unavailable or failed, switching to client-side goal engine:', serverErr);
       }
 
-      const contentType = response.headers.get('content-type') || '';
+      // Fallback if server API failed, returned HTML/404, or wasn't SSE/JSON
+      if (!isServerSuccess) {
+        setLiveEvent('Executing autonomous goal engine...');
+        setExecutionState('PLANNING');
+        await new Promise((r) => setTimeout(r, 300));
 
-      if (contentType.includes('text/event-stream') && response.body) {
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
+        setExecutionState('EXECUTING');
+        const clientResult = await executeGoalEngine(goal, false);
 
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-          const events = buffer.split('\n\n');
-          buffer = events.pop() || '';
-
-          for (const rawEvent of events) {
-            const dataLines = rawEvent
-              .split('\n')
-              .filter((line) => line.startsWith('data:'))
-              .map((line) => line.slice(5).trim());
-
-            if (!dataLines.length) continue;
-            const payload = dataLines.join('\n');
-            if (!payload || payload === '[DONE]') continue;
-
-            try {
-              applyEvent(JSON.parse(payload));
-            } catch {
-              setLiveEvent(payload);
-            }
-          }
-        }
-
-        if (buffer.trim()) {
-          const dataLines = buffer
-            .split('\n')
-            .filter((line) => line.startsWith('data:'))
-            .map((line) => line.slice(5).trim());
-
-          const payload = dataLines.join('\n');
-          if (payload && payload !== '[DONE]') {
-            try {
-              applyEvent(JSON.parse(payload));
-            } catch {
-              setLiveEvent(payload);
-            }
-          }
-        }
-      } else {
-        const rawText = await response.text();
-        let data: GoalExecutionResult | null = null;
-        try {
-          data = JSON.parse(rawText);
-        } catch {
-          throw new Error('Server returned non-JSON response during goal execution.');
-        }
-
-        if (data) {
-          applyEvent({
-            state: data.executionState || 'COMPLETED',
-            nodes: data.nodes,
-            executionResult: data,
-            message: 'Autonomous execution completed.',
-          });
-        }
+        applyEvent({
+          state: 'COMPLETED',
+          nodes: clientResult.nodes,
+          executionResult: clientResult,
+          message: 'Autonomous goal execution completed via client engine.',
+        });
       }
 
       setExecutionState((current) => (current === 'FAILED' ? current : 'COMPLETED'));
