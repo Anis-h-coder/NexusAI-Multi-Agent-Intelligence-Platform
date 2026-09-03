@@ -11,23 +11,28 @@ const PORT = Number(process.env.PORT) || 3000;
 
 app.use(express.json({ limit: "25mb" }));
 
-// Initialize Gemini API client on server-side
-const apiKey = process.env.GEMINI_API_KEY;
-let ai: GoogleGenAI | null = null;
-if (apiKey) {
-  ai = new GoogleGenAI({
-    apiKey: apiKey,
-    httpOptions: {
-      headers: {
-        "User-Agent": "aistudio-build",
+// Safe getter for Gemini API client on server-side
+function getGeminiClient(): GoogleGenAI | null {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return null;
+  try {
+    return new GoogleGenAI({
+      apiKey: apiKey,
+      httpOptions: {
+        headers: {
+          "User-Agent": "aistudio-build",
+        },
       },
-    },
-  });
+    });
+  } catch (err) {
+    console.error("[NexusAI] Error initializing Gemini client:", err);
+    return null;
+  }
 }
 
 // Helper for calling Gemini API with exponential backoff retries & model fallbacks on transient errors (e.g. 503 high demand, 429 rate limit)
 async function callGeminiWithRetry(
-  aiClient: GoogleGenAI,
+  aiClient: GoogleGenAI | null,
   params: {
     contents: any;
     config?: any;
@@ -35,6 +40,10 @@ async function callGeminiWithRetry(
   },
   maxRetries = 2
 ): Promise<any> {
+  if (!aiClient) {
+    throw new Error("GEMINI_API_KEY environment variable is not configured on the server.");
+  }
+
   const preferred = params.preferredModel || "gemini-3.7-flash";
   const modelCandidates = [
     preferred,
@@ -99,12 +108,12 @@ async function callGeminiWithRetry(
   throw lastError;
 }
 
-// System Health API
+// System Health API - Lightweight and independent from Gemini initialization
 app.get("/api/health", (req, res) => {
   res.json({
     status: "ok",
     platform: "NexusAI Enterprise Autonomous Platform",
-    hasGeminiKey: Boolean(apiKey),
+    hasGeminiKey: Boolean(process.env.GEMINI_API_KEY),
     timestamp: new Date().toISOString(),
     architecture: {
       agents: 8,
@@ -608,9 +617,10 @@ Provide your response in strict JSON with this exact structure:
 }`;
 
     let parsed: any = null;
-    if (ai) {
+    const aiClient = getGeminiClient();
+    if (aiClient) {
       try {
-        const response = await callGeminiWithRetry(ai, {
+        const response = await callGeminiWithRetry(aiClient, {
           contents: prompt,
           config: { responseMimeType: "application/json" },
           preferredModel: "gemini-3.7-flash",
@@ -1127,7 +1137,8 @@ app.post("/api/agents/chat", async (req, res) => {
       return res.status(400).json({ error: "Message is required" });
     }
 
-    if (ai) {
+    const aiClient = getGeminiClient();
+    if (aiClient) {
       try {
         const prompt = `You are the ${role} Agent in an Autonomous Multi-Agent Fleet built on Gemini Engine.
 User Context: ${context || 'General goal'}
@@ -1135,7 +1146,7 @@ User Message: "${message}"
 
 Respond directly, concisely, and authoritatively in character as the ${role} specialist (2-4 sentences max). Be helpful, technically precise, and reference your specialized capability.`;
 
-        const response = await callGeminiWithRetry(ai, {
+        const response = await callGeminiWithRetry(aiClient, {
           contents: prompt,
           preferredModel: "gemini-3.7-flash",
         });
@@ -1157,14 +1168,15 @@ Respond directly, concisely, and authoritatively in character as the ${role} spe
 });
 
 // 1b. Autonomous Goal Engine Route
-app.post("/api/goal-engine/execute", async (req, res) => {
+app.post(["/api/goal-engine/execute", "/api/goal-engine/run"], async (req, res) => {
   try {
     const { userGoal, simulateMismatch, stream } = req.body;
     if (!userGoal) {
       return res.status(400).json({ error: "User goal is required" });
     }
 
-    const result = await executeGoalEngine(userGoal, Boolean(simulateMismatch), ai, callGeminiWithRetry);
+    const aiClient = getGeminiClient();
+    const result = await executeGoalEngine(userGoal, Boolean(simulateMismatch), aiClient, callGeminiWithRetry);
 
     if (stream && req.headers.accept?.includes('text/event-stream')) {
       res.setHeader('Content-Type', 'text/event-stream');
@@ -2077,7 +2089,8 @@ app.post("/api/rag/query", async (req, res) => {
       return res.status(400).json({ error: "Query is required" });
     }
 
-    if (!ai) {
+    const aiClient = getGeminiClient();
+    if (!aiClient) {
       return res.json({
         answer: `Here is what our enterprise knowledge base shows regarding "${query}":
 
@@ -2112,7 +2125,7 @@ Format key numbers clearly using bold text and concise bullet points where appro
 
     let answerText = "";
     try {
-      const response = await callGeminiWithRetry(ai!, {
+      const response = await callGeminiWithRetry(aiClient, {
         contents: prompt,
         preferredModel: "gemini-3.7-flash",
       });
@@ -2287,7 +2300,8 @@ app.post("/api/rag/chat", async (req, res) => {
 
     let answerText = "";
 
-    if (ai) {
+    const aiClient = getGeminiClient();
+    if (aiClient) {
       const systemInstruction = `You are the NexusAI RAG Knowledge Assistant. You answer user questions accurately based on the provided enterprise document context chunks.
 Context Chunks:
 ${contextText}
@@ -2325,7 +2339,7 @@ Guidelines:
       });
 
       try {
-        const response = await callGeminiWithRetry(ai, {
+        const response = await callGeminiWithRetry(aiClient, {
           contents: contentsPayload,
           preferredModel: "gemini-3.7-flash",
         });
@@ -2484,7 +2498,8 @@ app.post("/api/sql/translate", async (req, res) => {
 
     const fallbackSql = `SELECT ${cols.slice(0, 5).join(", ")}\nFROM ${targetTable}\nORDER BY ${cols[3] || cols[0]} DESC\nLIMIT 10;`;
 
-    if (!ai) {
+    const aiClient = getGeminiClient();
+    if (!aiClient) {
       return res.json({
         naturalPrompt: promptText || "Show top rows sorted by metric",
         generatedSql: fallbackSql,
@@ -2508,7 +2523,7 @@ Return valid JSON with keys:
 
     let parsed: any = {};
     try {
-      const response = await callGeminiWithRetry(ai!, {
+      const response = await callGeminiWithRetry(aiClient, {
         contents: aiPrompt,
         config: { responseMimeType: "application/json" },
         preferredModel: "gemini-3.7-flash",
@@ -2624,7 +2639,8 @@ Key findings indicate a **15.2% speedup in end-to-end task execution**, **91.2% 
 - **Governance**: Apply automated PII anonymization gates on agent communication channels.
 `;
 
-    if (!ai) {
+    const aiClient = getGeminiClient();
+    if (!aiClient) {
       return res.json({
         title: reportTopic,
         markdown: defaultReportText,
@@ -2644,7 +2660,7 @@ CRITICAL GUIDELINES:
 
     let markdownText = "";
     try {
-      const response = await callGeminiWithRetry(ai!, {
+      const response = await callGeminiWithRetry(aiClient, {
         contents: prompt,
         preferredModel: "gemini-3.7-flash",
       });
@@ -2666,12 +2682,16 @@ CRITICAL GUIDELINES:
 // Start Express server and mount Vite middleware
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
-    const { createServer: createViteServer } = await import("vite");
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
+    try {
+      const { createServer: createViteServer } = await import("vite");
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: "spa",
+      });
+      app.use(vite.middlewares);
+    } catch (e) {
+      console.warn("[NexusAI] Dev Vite server middleware skipped:", e);
+    }
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
@@ -2685,7 +2705,15 @@ async function startServer() {
   });
 }
 
-if (!process.env.VERCEL) {
+const isDirectRun = Boolean(
+  process.argv[1] && (
+    process.argv[1].endsWith('server.ts') ||
+    process.argv[1].endsWith('server.cjs') ||
+    process.argv[1].endsWith('server.js')
+  )
+);
+
+if (!process.env.VERCEL && isDirectRun) {
   startServer();
 }
 
