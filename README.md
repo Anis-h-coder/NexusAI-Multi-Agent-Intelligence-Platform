@@ -78,3 +78,26 @@ NexusAI resolves these enterprise challenges through a unified, architectural pi
 ---
 
 ## System Architecture
+
+┌─────────────────────────────────────────┐
+                           │           User Natural Language         │
+                           │          Directive / Goal Input         │
+                           └────────────────────┬────────────────────┘
+                                                │
+                                                ▼
+                           ┌─────────────────────────────────────────┐
+                           │       Control Center & Gateway          │
+                           │   Express REST API + System Telemetry   │
+                           └────────────────────┬────────────────────┘
+                                                │
+                                                ▼
+                           ┌─────────────────────────────────────────┐
+                           │      Autonomous Planner Agent (DAG)     │
+                           │ Intent Analysis & Capability Extraction │
+                           └────────────────────┬────────────────────┘
+                                                │
+         ┌──────────────────────┬───────────────┴───────────────┬──────────────────────┐
+         │                      │                               │                      │
+         ▼                      ▼                               ▼                      ▼
+
+         
