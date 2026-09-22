@@ -1,4 +1,4 @@
-# NexusAI Enterprise Multi-Agent Intelligence Platform
+# NexusAI Multi-Agent Intelligence Platform
 
 > An autonomous multi-agent orchestration engine, automated machine learning (AutoML) workbench with explainability (XAI), high-performance RAG vector knowledge hub, and natural language business intelligence studio.
 
