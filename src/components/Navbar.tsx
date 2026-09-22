@@ -35,10 +35,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navItems = [
+  interface NavItem {
+    id: string;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    badge?: string;
+  }
+
+  const navItems: NavItem[] = [
     { id: 'overview', label: 'Control Center', icon: Cpu },
-    { id: 'goalEngine', label: 'Goal Engine', icon: Brain, badge: 'Auto' },
-    { id: 'agents', label: 'Multi-Agent Fleet', icon: Layers },
+    { id: 'agents', label: 'Multi-Agent Fleet', icon: Layers, badge: 'DAG' },
     { id: 'automl', label: 'AutoML Workbench', icon: BarChart3 },
     { id: 'rag', label: 'RAG Knowledge Hub', icon: Database },
     { id: 'sql', label: 'NL SQL & BI Studio', icon: Terminal },

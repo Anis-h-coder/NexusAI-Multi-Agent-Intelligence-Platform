@@ -112,12 +112,12 @@ export const LandingDashboard: React.FC<LandingDashboardProps> = ({
         </div>
       </div>
 
-      {/* Autonomous Goal Engine Featured Action Card */}
+      {/* Autonomous Multi-Agent Fleet Featured Action Card */}
       <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 border border-emerald-500/30 rounded-2xl p-6 shadow-xl text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="space-y-2 max-w-2xl">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/30">
-            <Brain className="w-3.5 h-3.5" />
-            <span>🧠 Autonomous Goal Engine</span>
+            <Layers className="w-3.5 h-3.5" />
+            <span>Autonomous Multi-Agent Fleet</span>
           </div>
           <h2 className="text-lg sm:text-xl font-extrabold text-white">
             "Analyze our sales data and identify why revenue dropped."
@@ -129,10 +129,10 @@ export const LandingDashboard: React.FC<LandingDashboardProps> = ({
         </div>
 
         <button
-          onClick={() => setActiveTab('goalEngine')}
+          onClick={() => setActiveTab('agents')}
           className="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm shadow-lg shadow-emerald-500/25 transition-all flex items-center space-x-2 shrink-0 cursor-pointer"
         >
-          <span>Launch Goal Engine</span>
+          <span>Launch Multi-Agent Fleet</span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>

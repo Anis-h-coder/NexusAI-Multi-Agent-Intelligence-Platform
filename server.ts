@@ -2,7 +2,6 @@ import express from "express";
 import path from "path";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
-import { executeGoalEngine } from "./src/server/goalEngineService";
 
 dotenv.config();
 
@@ -1167,66 +1166,9 @@ Respond directly, concisely, and authoritatively in character as the ${role} spe
   }
 });
 
-// 1b. Autonomous Goal Engine Route
+// 1b. Fleet Orchestration Status Route
 app.post(["/api/goal-engine/execute", "/api/goal-engine/run"], async (req, res) => {
-  try {
-    const { userGoal, simulateMismatch, stream } = req.body;
-    if (!userGoal) {
-      return res.status(400).json({ error: "User goal is required" });
-    }
-
-    const aiClient = getGeminiClient();
-    const result = await executeGoalEngine(userGoal, Boolean(simulateMismatch), aiClient, callGeminiWithRetry);
-
-    if (stream && req.headers.accept?.includes('text/event-stream')) {
-      res.setHeader('Content-Type', 'text/event-stream');
-      res.setHeader('Cache-Control', 'no-cache');
-      res.setHeader('Connection', 'keep-alive');
-
-      // Send intake event
-      res.write(`data: ${JSON.stringify({ state: 'INTAKE', message: 'Goal received. Understanding intent & building DAG...', nodes: result.nodes.map((n, idx) => ({ ...n, status: idx === 0 ? 'running' : 'queued' })) })}\n\n`);
-
-      // Sequentially stream steps with realistic multi-agent progress
-      for (let i = 0; i < result.nodes.length; i++) {
-        await new Promise((resolve) => setTimeout(resolve, 400));
-        const currentNode = result.nodes[i];
-        let state = 'EXECUTING';
-        if (currentNode.stage === 'PLANNER') state = 'PLANNING';
-        if (currentNode.stage === 'QA_AGENT') state = 'VALIDATING';
-        if (currentNode.stage === 'EXECUTIVE_REPORT') state = 'COMPLETED';
-
-        const updatedNodes = result.nodes.map((n, idx) => {
-          if (idx < i) return { ...n, status: 'completed' };
-          if (idx === i) return { ...n, status: 'running' };
-          return { ...n, status: 'queued' };
-        });
-
-        res.write(`data: ${JSON.stringify({
-          state,
-          message: `${currentNode.agentRole}: ${currentNode.title}`,
-          nodes: updatedNodes,
-          currentNodeIndex: i,
-        })}\n\n`);
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 350));
-
-      // Send final completion result
-      res.write(`data: ${JSON.stringify({
-        state: 'COMPLETED',
-        message: 'Autonomous workflow executed successfully.',
-        executionResult: result,
-        nodes: result.nodes.map(n => ({ ...n, status: 'completed' }))
-      })}\n\n`);
-      res.write('data: [DONE]\n\n');
-      return res.end();
-    }
-
-    return res.json(result);
-  } catch (err: any) {
-    console.error("Goal Engine execution error:", err);
-    return res.status(500).json({ error: err.message || "Failed to execute autonomous goal engine" });
-  }
+  res.json({ message: "Multi-agent fleet orchestration is handled via /api/agents/run" });
 });
 
 /* Legacy inline block bypassed

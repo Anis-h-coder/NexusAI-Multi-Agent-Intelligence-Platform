@@ -6,7 +6,6 @@ import { AutoMLWorkbench } from './components/AutoMLWorkbench';
 import { RagKnowledgeHub } from './components/RagKnowledgeHub';
 import { NLQueryStudio } from './components/NLQueryStudio';
 import { AgenticChat } from './components/AgenticChat';
-import { AutonomousGoalEngine } from './components/AutonomousGoalEngine';
 
 import { AgentState, AgentExecutionStep, DynamicWorkflowPlan } from './types';
 import { INITIAL_AGENTS, CURRENT_USER } from './data/mockData';
@@ -336,8 +335,6 @@ uvicorn main:app --host 0.0.0.0 --port 3000 --reload
               onRunQuickTask={handleRunQuickTask}
             />
           )}
-
-          {activeTab === 'goalEngine' && <AutonomousGoalEngine />}
 
           {activeTab === 'agents' && (
             <AgentMonitor
