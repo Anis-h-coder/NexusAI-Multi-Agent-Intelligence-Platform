@@ -198,24 +198,39 @@ The following benchmarks demonstrate evaluated performance metrics across core s
 ## Screenshots
 
 ### 1. Control Center & Real-Time Telemetry
-<img width="1896" height="1004" alt="Control Center Dashboard" src="https://github.com/user-attachments/assets/fd381821-e1c9-4392-8032-ec1c9ce22047" />
+<img width="947" height="539" alt="Screenshot 2026-09-25 135455" src="https://github.com/user-attachments/assets/0dac212c-29a2-4978-911a-67460212bf68" />
+<img width="945" height="539" alt="Screenshot 2026-09-25 135529" src="https://github.com/user-attachments/assets/940c8350-032e-4f85-b4e3-fc82993301de" />
 
 ### 2. Autonomous Multi-Agent Fleet Orchestrator
-<img width="1893" height="1002" alt="Multi-Agent Fleet Overview" src="https://github.com/user-attachments/assets/b8f20bd5-d483-4b9c-af1e-cb5317a96e4e" />
-<img width="1894" height="1003" alt="Agent Execution DAG" src="https://github.com/user-attachments/assets/53e62ab5-5567-433a-8faa-efbd6ad93cc3" />
+<img width="947" height="539" alt="Screenshot 2026-09-25 135958" src="https://github.com/user-attachments/assets/17c97aff-05d0-4a32-9dc8-5afae30deb59" />
+<img width="947" height="539" alt="Screenshot 2026-09-25 140034" src="https://github.com/user-attachments/assets/2e94bd5b-7583-49a1-8fef-e7154d62b2a5" />
+<img width="947" height="539" alt="Screenshot 2026-09-25 140107" src="https://github.com/user-attachments/assets/b018a5f2-50c2-4225-a36d-fc848d6ed3aa" />
+<img width="947" height="539" alt="Screenshot 2026-09-25 140124" src="https://github.com/user-attachments/assets/b0239766-ced6-4693-a074-9031803c0dc7" />
+<img width="948" height="539" alt="Screenshot 2026-09-25 140139" src="https://github.com/user-attachments/assets/b2e42895-cc82-4762-aa5e-4d84a3f754e9" />
 
 ### 3. AutoML Workbench & SHAP Feature Explainability (XAI)
-<img width="1895" height="1004" alt="AutoML Model Leaderboard" src="https://github.com/user-attachments/assets/67dc36bb-e3a8-4efb-9d9f-9e9079048703" />
-<img width="1896" height="1007" alt="TreeSHAP Feature Attribution" src="https://github.com/user-attachments/assets/ab0ef8d6-97cb-4504-8602-aa7fa1b4925a" />
+<img width="946" height="539" alt="Screenshot 2026-09-25 140520" src="https://github.com/user-attachments/assets/23426feb-24a2-4e3c-af65-d68afa9d3ebe" />
+<img width="947" height="539" alt="Screenshot 2026-09-25 140602" src="https://github.com/user-attachments/assets/1388eba8-e0cb-4d8f-81ad-e270927fe15b" />
+<img width="949" height="539" alt="Screenshot 2026-09-25 140613" src="https://github.com/user-attachments/assets/c2017ba4-fcc9-4929-833e-d4d2a5749ceb" />
+<img width="947" height="539" alt="Screenshot 2026-09-25 140629" src="https://github.com/user-attachments/assets/d55cc49f-bb6d-4bc9-8616-9a491e8f274f" />
+<img width="945" height="539" alt="Screenshot 2026-09-25 140716" src="https://github.com/user-attachments/assets/ba191891-c010-4e3f-a7f2-c829988c06b7" />
+<img width="947" height="539" alt="Screenshot 2026-09-25 140754" src="https://github.com/user-attachments/assets/29258389-9329-4417-bc2d-5c99d8c29d19" />
 
-### 4. RAG Knowledge Hub (Sub-15ms Vector Retrieval)
-<img width="1895" height="1018" alt="RAG Knowledge Hub" src="https://github.com/user-attachments/assets/3003abb8-73c6-4a6e-a5f5-1442794c2735" />
+### 4. RAG Knowledge Hub
+<img width="948" height="536" alt="Screenshot 2026-09-25 141048" src="https://github.com/user-attachments/assets/dc07582e-0630-4cfd-9400-2ca31f2b621a" />
+<img width="947" height="539" alt="Screenshot 2026-09-25 141153" src="https://github.com/user-attachments/assets/4f2ccd9e-6bd8-49f2-ae0d-832d8e7c2514" />
+<img width="947" height="539" alt="Screenshot 2026-09-25 141205" src="https://github.com/user-attachments/assets/e5344242-f7b6-4c45-885d-0b9e84fd62e5" />
 
 ### 5. Natural Language BI & PostgreSQL EXPLAIN Plan Analyzer
-<img width="1892" height="1020" alt="NL SQL & BI Studio" src="https://github.com/user-attachments/assets/a732582d-e5e1-41b7-b56c-3a6e2c7145d4" />
+<img width="947" height="539" alt="Screenshot 2026-09-25 141413" src="https://github.com/user-attachments/assets/42af9e44-8b7d-4931-96fa-fd8f83724548" />
+<img width="947" height="539" alt="Screenshot 2026-09-25 141428" src="https://github.com/user-attachments/assets/76d1ce51-1c71-468c-bc6f-8fb235dd806e" />
+<img width="945" height="539" alt="Screenshot 2026-09-25 141505" src="https://github.com/user-attachments/assets/08e9c3e3-7d7a-4510-b2a3-61e68b568d5f" />
 
-### 6. C-Suite Executive Briefings & Presentation Deck Engine
-<img width="1896" height="1006" alt="Executive Report Generator" src="https://github.com/user-attachments/assets/e293cc2c-f975-4b75-a847-15f308d40ae6" />
+### 6. Agent Co-Pilot
+<img width="947" height="539" alt="Screenshot 2026-09-25 141729" src="https://github.com/user-attachments/assets/78c2d334-8ab0-4224-854a-ecce786c8a00" />
+<img width="947" height="539" alt="Screenshot 2026-09-25 141759" src="https://github.com/user-attachments/assets/eed3f14a-e099-4e19-847a-9ae9bfcc1b12" />
+<img width="946" height="539" alt="Screenshot 2026-09-25 141840" src="https://github.com/user-attachments/assets/e1f1c274-621e-4ad3-90b0-6f1247fd3a42" />
+
 
 ---
 
